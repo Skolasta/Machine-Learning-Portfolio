@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classifier - Sonuç</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .result-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .spam-result {
+            color: #e74c3c;
+        }
+
+        .ham-result {
+            color: #27ae60;
+        }
+
+        .error-result {
+            color: #f39c12;
+        }
+
+        .result-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 5px solid;
+        }
+
+        .spam-card {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .ham-card {
+            border-left-color: #27ae60;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        }
+
+        .error-card {
+            border-left-color: #f39c12;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .result-description {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .confidence-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease-out;
+        }
+
+        .spam-confidence {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+
+        .ham-confidence {
+            background: linear-gradient(90deg, #27ae60, #229954);
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .tips {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .tips h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .tips ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips li {
+            padding: 8px 0;
+            color: #666;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .tips li::before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .result-title {
+                font-size: 2rem;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if prediction == "Spam" %}
+            <div class="result-icon">🚨</div>
+            <h1 class="result-title spam-result">SPAM TESPİT EDİLDİ!</h1>
+            <p class="result-subtitle">Bu mesaj spam olarak sınıflandırıldı</p>
+            
+            <div class="result-card spam-card">
+                <div class="result-description">
+                    <strong>⚠️ Dikkat:</strong> Bu mesaj potansiyel olarak zararlı veya istenmeyen içerik barındırıyor olabilir.
+                </div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill spam-confidence" style="width: 85%"></div>
+                </div>
+                <small>Güven Skoru: %85</small>
+            </div>
+            
+            <div class="tips">
+                <h3>🛡️ Güvenlik İpuçları:</h3>
+                <ul>
+                    <li>Bu tür mesajlardaki linklere tıklamayın</li>
+                    <li>Kişisel bilgilerinizi paylaşmayın</li>
+                    <li>Şüpheli mesajları spam klasörüne taşıyın</li>
+                    <li>Bilinmeyen gönderenlerden gelen mesajlara dikkat edin</li>
+                </ul>
+            </div>
+            
+        {% elif prediction == "Ham" %}
+            <div class="result-icon">✅</div>
+            <h1 class="result-title ham-result">GÜVENLİ MESAJ</h1>
+            <p class="result-subtitle">Bu mesaj spam değil, güvenli görünüyor</p>
+            
+            <div class="result-card ham-card">
+                <div class="result-description">
+                    <strong>✓ Güvenli:</strong> Bu mesaj normal bir mesaj olarak sınıflandırıldı ve spam içermiyor.
+                </div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill ham-confidence" style="width: 92%"></div>
+                </div>
+                <small>Güven Skoru: %92</small>
+            </div>
+            
+            <div class="tips">
+                <h3>📧 Bilgi:</h3>
+                <ul>
+                    <li>Mesaj güvenli olarak değerlendirildi</li>
+                    <li>Normal şekilde işlem yapabilirsiniz</li>
+                    <li>Yine de bilinmeyen gönderenlere dikkat edin</li>
+                    <li>Şüpheli linkler için ekstra kontrol yapın</li>
+                </ul>
+            </div>
+            
+        {% else %}
+            <div class="result-icon">⚠️</div>
+            <h1 class="result-title error-result">HATA</h1>
+            <p class="result-subtitle">Analiz sırasında bir sorun oluştu</p>
+            
+            <div class="result-card error-card">
+                <div class="result-description">
+                    <strong>Hata Detayı:</strong> {{ prediction }}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">🔄 Yeni Analiz Yap</a>
+            <button onclick="window.history.back()" class="btn btn-secondary">← Geri Dön</button>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde animasyonları başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Confidence bar animasyonu
+            setTimeout(function() {
+                const confidenceFill = document.querySelector('.confidence-fill');
+                if (confidenceFill) {
+                    confidenceFill.style.width = confidenceFill.style.width;
+                }
+            }, 500);
+        });
+
+        // Geri dön butonu için
+        if (window.history.length <= 1) {
+            const backBtn = document.querySelector('.btn-secondary');
+            if (backBtn) {
+                backBtn.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

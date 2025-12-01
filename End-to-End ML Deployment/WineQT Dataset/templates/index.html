@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Quality Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #722f37;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="number"]:focus {
+            border-color: #722f37;
+            outline: none;
+        }
+        .btn {
+            background-color: #722f37;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #5a252a;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍷 Wine Quality Prediction</h1>
+        <form id="wineForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fixed_acidity">Fixed Acidity:</label>
+                    <input type="number" id="fixed_acidity" name="fixed_acidity" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="volatile_acidity">Volatile Acidity:</label>
+                    <input type="number" id="volatile_acidity" name="volatile_acidity" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="citric_acid">Citric Acid:</label>
+                    <input type="number" id="citric_acid" name="citric_acid" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="residual_sugar">Residual Sugar:</label>
+                    <input type="number" id="residual_sugar" name="residual_sugar" step="0.1" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="chlorides">Chlorides:</label>
+                    <input type="number" id="chlorides" name="chlorides" step="0.001" required>
+                </div>
+                <div class="form-group">
+                    <label for="free_sulfur_dioxide">Free Sulfur Dioxide:</label>
+                    <input type="number" id="free_sulfur_dioxide" name="free_sulfur_dioxide" step="1" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="total_sulfur_dioxide">Total Sulfur Dioxide:</label>
+                    <input type="number" id="total_sulfur_dioxide" name="total_sulfur_dioxide" step="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="density">Density:</label>
+                    <input type="number" id="density" name="density" step="0.0001" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pH">pH:</label>
+                    <input type="number" id="pH" name="pH" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="sulphates">Sulphates:</label>
+                    <input type="number" id="sulphates" name="sulphates" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="alcohol">Alcohol (%):</label>
+                <input type="number" id="alcohol" name="alcohol" step="0.1" required>
+            </div>
+
+            <button type="submit" class="btn">Predict Wine Quality</button>
+            <div class="loading" id="loading">Predicting...</div>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('wineForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.querySelector('.btn');
+            
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            resultDiv.innerHTML = '';
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = parseFloat(value);
+            }
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('API Response:', result); // Debug
+                    
+                    const qualityClass = result.prediction === 1 ? 'success' : 'error';
+                    console.log('Quality Class:', qualityClass); // Debug
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result ${qualityClass}">
+                            <div style="font-size: 24px; margin-bottom: 10px;">
+                                ${result.quality_label}
+                            </div>
+                            <div style="font-size: 16px;">
+                                Confidence: ${result.confidence}%
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Prediction failed');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">Error: ${error.message}</div>`;
+            } finally {
+                // Hide loading state
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diyabet Tahmin Modeli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .result.positive {
+            background-color: #fee;
+            color: #c53030;
+            border: 2px solid #feb2b2;
+        }
+        
+        .result.negative {
+            background-color: #f0fff4;
+            color: #38a169;
+            border: 2px solid #9ae6b4;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Diyabet Tahmin Modeli</h1>
+        
+        <form id="diabetesForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pregnancies">Hamilelik Sayısı:</label>
+                    <input type="number" id="pregnancies" name="Pregnancies" min="0" max="20" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="glucose">Glukoz Seviyesi:</label>
+                    <input type="number" id="glucose" name="Glucose" min="0" max="300" step="0.1" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bloodPressure">Kan Basıncı:</label>
+                    <input type="number" id="bloodPressure" name="BloodPressure" min="0" max="200" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="skinThickness">Cilt Kalınlığı:</label>
+                    <input type="number" id="skinThickness" name="SkinThickness" min="0" max="100" step="0.1" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="insulin">İnsülin Seviyesi:</label>
+                    <input type="number" id="insulin" name="Insulin" min="0" max="1000" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bmi">Vücut Kitle İndeksi (BMI):</label>
+                    <input type="number" id="bmi" name="BMI" min="0" max="70" step="0.1" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="diabetesPedigreeFunction">Diyabet Soy Ağacı Fonksiyonu:</label>
+                    <input type="number" id="diabetesPedigreeFunction" name="DiabetesPedigreeFunction" min="0" max="3" step="0.001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Yaş:</label>
+                    <input type="number" id="age" name="Age" min="1" max="120" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn">Diyabet Riskini Tahmin Et</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Tahmin yapılıyor...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('diabetesForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            // Show loading, hide result
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = parseFloat(value);
+            }
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Tahmin yapılırken bir hata oluştu');
+                }
+                
+                const prediction = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                // Show result
+                result.style.display = 'block';
+                
+                if (prediction.prediction >= 0.5) {
+                    result.className = 'result positive';
+                    result.innerHTML = `
+                        <strong>⚠️ Yüksek Risk</strong><br>
+                        Diyabet riski: %${(prediction.prediction * 100).toFixed(1)}<br>
+                        <small>Lütfen bir doktora danışın.</small>
+                    `;
+                } else {
+                    result.className = 'result negative';
+                    result.innerHTML = `
+                        <strong>✅ Düşük Risk</strong><br>
+                        Diyabet riski: %${(prediction.prediction * 100).toFixed(1)}<br>
+                        <small>Sağlıklı yaşam tarzınızı sürdürün.</small>
+                    `;
+                }
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result positive';
+                result.innerHTML = `<strong>Hata:</strong> ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
