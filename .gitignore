@@ -1,0 +1,14 @@
+# Python derleme dosyaları
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpointleri (Gereksiz kalabalık yapar)
+.ipynb_checkpoints/
+
+# Sanal ortam klasörleri (Varsa)
+venv/
+env/
+.env
+
+# Çok büyük veri setleri (Opsiyonel, şu anki csv'leriniz küçük, sorun yok)
+# *.csv 
